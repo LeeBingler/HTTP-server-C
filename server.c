@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = port,
-        .sin_addr.s_addr = 0
+        .sin_addr.s_addr = 0 // PROBLEM
     };
 
     if (bind(server_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
@@ -69,13 +69,13 @@ int main(int argc, char **argv) {
         printf("Error");
         return 1;
     }
-    
+    /*
     char buff[256] = { 0 };
-
     recv(server_fd, buff, 256, 0);
     
     printf("%s\n", buff);
-
+    */
+    printf("works\n");
     close(server_fd);
     close(client_fd);
     return 0;

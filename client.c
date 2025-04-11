@@ -56,28 +56,28 @@ int main(int argc, char **argv) {
         close(server_fd);
         return errno;
     }
-    
-    if (listen(server_fd, 10) == -1) {
-        perror("bind didn't work");
+
+    int dest_port;
+
+    scanf("%d", &dest_port);
+
+    struct sockaddr_in dest_addr = {
+        .sin_family = AF_INET,
+        .sin_port = htons(dest_port),
+        .sin_addr.s_addr = 0
+    };
+
+    if (connect(server_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr) == -1)) {
+        perror("connect did not work");
         close(server_fd);
         return errno;
     }
-    
-    int client_fd = accept(server_fd, 0, 0); // &addr, (socklen_t *) sizeof(addr)
-    
-    if (client_fd == -1) {
-        perror("accept fail");
-        close(server_fd);
-        return 1;
-    }
-    
+
+
     char buff[256] = "Hi !";
 
     send(server_fd, buff, 256, 0);
-    
-    printf("%s\n", buff);
 
     close(server_fd);
-    close(client_fd);
     return 0;
 }
