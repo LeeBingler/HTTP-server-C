@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = port,
-        .sin_addr.s_addr = 0 // PROBLEM
+        .sin_addr.s_addr = INADDR_ANY // Listen on all port
     };
 
     if (bind(server_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
@@ -60,21 +60,38 @@ int main(int argc, char **argv) {
         close(server_fd);
         return errno;
     }
-    
-    int client_fd = accept(server_fd, 0, 0); // &addr, (socklen_t *) sizeof(addr)
+    struct sockaddr_in client_addr;
+    unsigned int addrlen = sizeof(client_addr);
+    int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
     
     if (client_fd == -1) {
-        perror("accept fail");
+        perror("accept()");
         close(server_fd);
-        printf("Error");
         return 1;
-    }
-    /*
+    } 
+
+    printf("Connection: %i\n", client_addr.sin_port);
+
     char buff[256] = { 0 };
-    recv(server_fd, buff, 256, 0);
+    int client_socket;
+    int len = recv(server_fd, buff, 256, MSG_DONTWAIT);
     
-    printf("%s\n", buff);
-    */
+    if (len == -1) {
+        perror("recv()");
+        close(server_fd);
+        close(client_fd);
+        return 1;
+
+    } else if (len == 0) {
+        printf("User disconnected");
+
+    } else if (len > 0) {
+        // client send data
+        char mess[256] = "Hi";
+        send(client_socket, mess, 256, MSG_DONTWAIT);
+        printf("send\n");
+    }
+
     printf("works\n");
     close(server_fd);
     close(client_fd);

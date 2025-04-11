@@ -59,20 +59,20 @@ int main(int argc, char **argv) {
 
     int dest_port;
 
-    scanf("%d", &dest_port);
+    printf("Port to connect: ");
+    scanf("%i", &dest_port);
 
     struct sockaddr_in dest_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(dest_port),
-        .sin_addr.s_addr = 0
+        .sin_addr.s_addr = INADDR_ANY
     };
 
     if (connect(server_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr) == -1)) {
-        perror("connect did not work");
+        perror("Connect did not work");
         close(server_fd);
         return errno;
     }
-
 
     char buff[256] = "Hi !";
 
