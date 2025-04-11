@@ -6,21 +6,34 @@
 ## implement the clean, fclean, re rule.
 ##
 
-SRC	=	main.c	\
+SRCSERVER	=	server.c	\
+
+SRCCLIENT	=	client.c	\
 
 CFLAGS	=	-g3 -g -Wall -Wextra -lncurses
 
-OBJ	=	$(SRC:.c=.o)
+OBJSERVER	=	$(SRCSERVER:.c=.o)
+
+OBJCLIENT	=	$(SRCCLIENT:.c=.o)
 
 NAME	=	my-http-server
 
+NAMESERVER	=	my-server
+
+NAMECLIENT	=	my-client
+
 all: 	$(NAME)
 
-$(NAME):	$(OBJ)
-	gcc -o $(NAME) $(OBJ) $(CFLAGS) 
+$(NAME):	$(NAMESERVER) $(NAMECLIENT)
+
+$(NAMESERVER):	$(OBJSERVER)
+	gcc -o $(NAMESERVER) $(OBJSERVER) $(CFLAGS) 
+
+$(NAMECLIENT):	$(OBJCLIENT)
+	gcc -o $(NAMECLIENT) $(OBJCLIENT) $(CFLAGS)
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJSERVER) $(OBJCLIENT)
 
 fclean: clean
 	rm -f $(NAME)
