@@ -14,6 +14,7 @@ int parser(int argc, char **argv) {
         return 1;
     }
     
+    
     for (int i = 0; argv[1][i] != '\0'; i++) {
         if (argv[1][i] < '0' || argv[1][i] > '9') {
             printf("Error: arg 2 is not a port number\n");
@@ -32,8 +33,9 @@ uint16_t to_port(char *port_nb) {
 }
 
 int main(int argc, char **argv) {
-    if (parser(argc, argv))
-        return 1;
+    if (parser(argc, argv)) {
+        return 2;
+    }
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     unsigned int port = to_port(argv[1]);
@@ -66,13 +68,12 @@ int main(int argc, char **argv) {
     if (client_fd == -1) {
         perror("accept fail");
         close(server_fd);
-        printf("Error");
         return 1;
     }
     
-    char buff[256] = { 0 };
+    char buff[256] = "Hi !";
 
-    recv(server_fd, buff, 256, 0);
+    send(server_fd, buff, 256, 0);
     
     printf("%s\n", buff);
 
