@@ -56,10 +56,11 @@ int main(int argc, char **argv) {
     }
     
     if (listen(server_fd, 10) == -1) {
-        perror("bind didn't work");
+        perror("listen() didn't work");
         close(server_fd);
         return errno;
     }
+
     struct sockaddr_in client_addr;
     unsigned int addrlen = sizeof(client_addr);
     int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
@@ -73,8 +74,7 @@ int main(int argc, char **argv) {
     printf("Connection: %i\n", client_addr.sin_port);
 
     char buff[256] = { 0 };
-    int client_socket;
-    int len = recv(server_fd, buff, 256, MSG_DONTWAIT);
+    int len = recv(client_fd, buff, 256, 0);
     
     if (len == -1) {
         perror("recv()");
@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
 
     } else if (len > 0) {
         // client send data
-        char mess[256] = "Hi";
-        send(client_socket, mess, 256, MSG_DONTWAIT);
+        char mess[2] = "Hi";
+        send(client_fd, mess, 2, MSG_DONTWAIT);
         printf("send\n");
     }
 
