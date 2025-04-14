@@ -37,23 +37,11 @@ int main(int argc, char **argv) {
         return 2;
     }
 
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
     unsigned int port = to_port(argv[1]);
 
-    if (server_fd == -1) {
+    if (client_fd == -1) {
         perror("server did not open");
-        return errno;
-    }
-
-    struct sockaddr_in addr = {
-        .sin_family = AF_INET,
-        .sin_port = port,
-        .sin_addr.s_addr = 0
-    };
-
-    if (bind(server_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-        perror("bind didn't work");
-        close(server_fd);
         return errno;
     }
 
@@ -65,19 +53,19 @@ int main(int argc, char **argv) {
     struct sockaddr_in dest_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(dest_port),
-        .sin_addr.s_addr = INADDR_ANY
+        .sin_addr.s_addr = htonl(INADDR_ANY)
     };
 
-    if (connect(server_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr) == -1)) {
+    if (connect(client_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr) == -1)) {
         perror("Connect did not work");
         close(server_fd);
         return errno;
     }
 
-    char buff[256] = "Hi !";
+    char buff[4] = "Hi !";
 
-    send(server_fd, buff, 256, 0);
+    send(client_fd, buff, 4, 0);
 
-    close(server_fd);
-    return 0;
+    close(client_fd);
+    return EXIT_SUCCESS;
 }

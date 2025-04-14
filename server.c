@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "include/http-server.h"
+
 int parser(int argc, char **argv) {
     if (argc != 2) {
         printf("Error: Missing port number\n");
@@ -42,6 +44,12 @@ int main(int argc, char **argv) {
         perror("server did not open");
         return errno;
     }
+    int true = 1;
+    if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) == -1) {
+        perror("setsockopt()");
+        close(server_fd);
+        return errno;
+    }
 
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
@@ -50,50 +58,34 @@ int main(int argc, char **argv) {
     };
 
     if (bind(server_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-        perror("bind didn't work");
+        perror("bind()");
         close(server_fd);
         return errno;
     }
     
     if (listen(server_fd, 10) == -1) {
-        perror("listen() didn't work");
+        perror("listen()");
         close(server_fd);
         return errno;
     }
-
-    struct sockaddr_in client_addr;
+    
+    struct sockaddr_in client_addr = { 0 };
     unsigned int addrlen = sizeof(client_addr);
-    int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
+    int client_fd = 0;
+
+    while (1) {
+        client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
     
-    if (client_fd == -1) {
-        perror("accept()");
-        close(server_fd);
-        return 1;
-    } 
+        if (client_fd == -1) {
+            perror("accept()");
+            close(server_fd);
+            return errno;
+        } 
 
-    printf("Connection: %i\n", client_addr.sin_port);
-
-    char buff[256] = { 0 };
-    int len = recv(client_fd, buff, 256, 0);
-    
-    if (len == -1) {
-        perror("recv()");
-        close(server_fd);
-        close(client_fd);
-        return 1;
-
-    } else if (len == 0) {
-        printf("User disconnected");
-
-    } else if (len > 0) {
-        // client send data
-        char mess[2] = "Hi";
-        send(client_fd, mess, 2, MSG_DONTWAIT);
-        printf("send\n");
+        printf("Connection: %i\n", client_addr.sin_port);
+        handle_client(client_fd);
     }
 
-    printf("works\n");
     close(server_fd);
-    close(client_fd);
     return 0;
 }

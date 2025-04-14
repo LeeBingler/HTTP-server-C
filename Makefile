@@ -7,6 +7,8 @@
 ##
 
 SRCSERVER	=	server.c	\
+				handle_client.c	\
+
 
 SRCCLIENT	=	client.c	\
 
