@@ -9,10 +9,10 @@
 #define BUFF_SIZE 1080
 
 typedef struct {
-    char *request;
+    char *method;
+    char *path;
     char *protocol;
-    char *content_type;
-    long content_lenght;
+    char *headers;
     char *data;
 } header_t;
 
