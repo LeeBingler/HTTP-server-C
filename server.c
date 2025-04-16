@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <signal.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,12 +11,18 @@
 
 #include "include/http-server.h"
 
+volatile sig_atomic_t running = 1;
+
+void handle_sigint(int sig) {
+    running = 0;
+}
+
 int parser(int argc, char **argv) {
     if (argc != 2) {
         printf("Error: Missing port number\n");
         return 1;
     }
-    
+
     for (int i = 0; argv[1][i] != '\0'; i++) {
         if (argv[1][i] < '0' || argv[1][i] > '9') {
             printf("Error: arg 2 is not a port number\n");
@@ -62,25 +69,27 @@ int main(int argc, char **argv) {
         close(server_fd);
         return errno;
     }
-    
+
     if (listen(server_fd, 10) == -1) {
         perror("listen()");
         close(server_fd);
         return errno;
     }
-    
+
+    signal(SIGINT, handle_sigint);
+
     struct sockaddr_in client_addr = { 0 };
     unsigned int addrlen = sizeof(client_addr);
     int client_fd = 0;
 
-    while (1) {
+    while (running) {
         client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
-    
+
         if (client_fd == -1) {
             perror("accept()");
             close(server_fd);
             return errno;
-        } 
+        }
 
         printf("Connection: %i\n", client_addr.sin_port);
         handle_client(client_fd);
