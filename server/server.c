@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "../include/http-server.h"
+#include "include/http-server.h"
 
 volatile sig_atomic_t running = 1;
 
@@ -16,15 +16,26 @@ void handle_sigint(int sig) {
     running = 0;
 }
 
-int parser(int argc, char **argv) {
-    if (argc != 3) {
-        printf("Error: Missing arg\n");
+void print_helper() {
+    printf("Usage: my-server [PORT] [ROOT_DIR]\nOpen a web server on PORT with ROOT_DIR as root.\n\nExamples:\n   ./my-server 8080 ./root/\n");
+}
+
+int parser_arg(int argc, char **argv) {
+    for (int i = 0; i < argc; i++) {
+        if (strncmp(argv[i], "--help", 6) == 0) {
+            print_helper();
+            return 1;
+        }
+    }
+
+    if (argc < 3) {
+        printf("my-server: missing arg\nTry 'my-server --help' for more information.\n");
         return 1;
     }
 
     for (int i = 0; argv[1][i] != '\0'; i++) {
         if (argv[1][i] < '0' || argv[1][i] > '9') {
-            printf("Error: arg 2 is not a port number\n");
+            printf("my-server: arg 2 is not a port number\nTry 'my-server --help' for more information.\n");
             return 1;
         }
     }
@@ -40,7 +51,7 @@ uint16_t to_port(char *port_nb) {
 }
 
 int main(int argc, char **argv) {
-    if (parser(argc, argv))
+    if (parser_arg(argc, argv))
         return 1;
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
