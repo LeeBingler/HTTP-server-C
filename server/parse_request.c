@@ -107,7 +107,12 @@ int parse_datas(request_t *request) {
      * Should use a parser like cJSON to make the request data cleaner
      */
     char *line = strtok(NULL, "\n\r");
+
+    if (!line)
+        return 0;
+
     request->datas = strdup(line);
+
     if (!request->datas)
         return 1;
     return 0;
