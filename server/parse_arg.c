@@ -22,7 +22,7 @@ int parse_arg(int argc, char **argv) {
 
     for (int i = 0; argv[1][i] != '\0'; i++) {
         if (argv[1][i] < '0' || argv[1][i] > '9') {
-            printf("my-server: arg 2 is not a port number\nTry 'my-server --help' for more information.\n");
+            printf("my-server: %s is not a port number\nTry 'my-server --help' for more information.\n", argv[1]);
             return 1;
         }
     }
@@ -34,7 +34,7 @@ int parse_arg(int argc, char **argv) {
         return 1;
     }
 
-    if (!(s.st_mode & S_IFDIR)) {
+    if (!(s.st_mode & S_IFDIR)) { // make it possible to take ./ by default as root_dir
         printf("my-server: %s is not a dir\n", argv[2]);
         return 1;
     }
