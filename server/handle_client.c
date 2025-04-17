@@ -5,20 +5,40 @@
 #define BUFF_SIZE 1024
 
 int get_request(request_t *request, int client_fd, char *path_root) {
-    struct dirent *entry;
-    int len_path = strlen(request->path);
-    DIR *root_dir = opendir(path_root);
+    size_t nbytes = 0;
+    FILE *file;
+    char response[BUFF_SIZE];
 
-    if (!root_dir) {
-        perror("opendir");
-        return 1;
+    printf("path: %s\n\n", request->path);
+    /*
+    file = fopen(request->path, "rb");
+
+    while ((nbytes = fread(response, sizeof(char), BUFF_SIZE)) > 0) {
+        int offset = 0;
+        int sent = 0;
+        while ((sent = send(client_fd, response + offset, nbytes, 0)) > 0 || (sent == -1 && errno == EINTR) ) {
+            if (sent > 0) {
+                offset += sent;
+                nbytes -= sent;
+            }
+        }
     }
+    close(file);
+    */
 
-    // make index.html default if the path end by "/"
+    return 0;
+}
+
+int normalize_request_path(request_t *request, char *path_root) {
+    int len_path = strlen(request->path);
+
+    // make index.html default if the path end by "/" ==> move it before get_request call
     if (request->path[len_path - 1] == '/') {
         char *str_index = "index.html";
         int len_index = strlen(str_index);
         char *new_path = calloc(len_path + len_index + 1, sizeof(char));
+
+        if (!new_path) return -1;
 
         strncpy(new_path, request->path, len_path);
         strncat(new_path, str_index, len_index);
@@ -27,17 +47,18 @@ int get_request(request_t *request, int client_fd, char *path_root) {
         request->path = new_path;
     }
 
-    printf("%s\n", request->path);
-    while ((entry = readdir(root_dir)) != NULL) {
-        if (!strcmp (entry->d_name, ".") || !strcmp (entry->d_name, ".."))
-            continue;
+    // add path_root to path
+    len_path = strlen(request->path);
+    int len_root = strlen(path_root);
+    char *new_path = calloc(len_path + len_root + 1, sizeof(char));
+    if (!new_path) return -1;
 
-        if (strcmp(entry->d_name, request->path) == 0) {
-            printf("%s\n", entry->d_name);
-        }
-    }
+    memcpy(new_path, path_root, len_root);
+    memcpy(new_path + len_root, request->path, len_path);
 
-    closedir(root_dir);
+    free(request->path);
+    request->path = new_path;
+
     return 0;
 }
 
@@ -59,6 +80,8 @@ int handle_client(int client_fd, char *path_root) {
     request_t *request = parse_request(buff);
     if (request == NULL)
         return errno;
+
+    normalize_request_path(request, path_root);
 
     if (strcmp(request->method, "GET") == 0) {
         get_request(request, client_fd, path_root);
