@@ -6,14 +6,31 @@
 
 int get_request(request_t *request, int client_fd, char *path_root) {
     size_t nbytes = 0;
-    FILE *file;
     char response[BUFF_SIZE];
+    FILE *file = fopen(request->path, "rb");
 
-    printf("path: %s\n\n", request->path);
-    /*
-    file = fopen(request->path, "rb");
+    if (!file) {
+        if (errno == ENOENT) {
+            printf("Erreur 404\n");
+            send(client_fd, "HTTP/1.0 404 Not Found\n", 24, 0);
+            return 404;
+        }
 
-    while ((nbytes = fread(response, sizeof(char), BUFF_SIZE)) > 0) {
+        if (errno == EACCES) {
+            printf("Erreur 403\n");
+            send(client_fd, "HTTP/1.0 403 Forbidden\n", 24, 0);
+            return 403;
+        }
+
+        printf("errno %i : %s\n", errno, strerror(errno));
+        return errno;
+    }
+    // Send header
+    send(client_fd, "HTTP/1.0 200 OK\n", 17, 0);
+
+    // Send file
+    // PB: From times to times the html is not send if its the same one multiple time
+    while ((nbytes = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
         int offset = 0;
         int sent = 0;
         while ((sent = send(client_fd, response + offset, nbytes, 0)) > 0 || (sent == -1 && errno == EINTR) ) {
@@ -23,14 +40,15 @@ int get_request(request_t *request, int client_fd, char *path_root) {
             }
         }
     }
-    close(file);
-    */
+    errno = 0;
 
+    fclose(file);
     return 0;
 }
 
 int normalize_request_path(request_t *request, char *path_root) {
     int len_path = strlen(request->path);
+    int len_root = strlen(path_root);
 
     // make index.html default if the path end by "/" ==> move it before get_request call
     if (request->path[len_path - 1] == '/') {
@@ -49,7 +67,6 @@ int normalize_request_path(request_t *request, char *path_root) {
 
     // add path_root to path
     len_path = strlen(request->path);
-    int len_root = strlen(path_root);
     char *new_path = calloc(len_path + len_root + 1, sizeof(char));
     if (!new_path) return -1;
 
@@ -89,8 +106,6 @@ int handle_client(int client_fd, char *path_root) {
         char *mess_header = "HTTP/1.0 501 Not Implemented\n";
         send(client_fd, mess_header, strlen(mess_header), MSG_CONFIRM);
     }
-
-    printf("send\n");
 
     close(client_fd);
     free_request(request);
