@@ -8,6 +8,7 @@
 
 SRCSERVER	=	server.c	\
 				handle_client.c	\
+				parse_request.c	\
 
 
 SRCCLIENT	=	client.c	\
