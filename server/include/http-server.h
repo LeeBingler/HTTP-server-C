@@ -31,4 +31,4 @@ request_t *parse_request(char *request);
 void free_request(request_t *request);
 
 
-int handle_client(int client_fd);
+int handle_client(int client_fd, char *path_root);

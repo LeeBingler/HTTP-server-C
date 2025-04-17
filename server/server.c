@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     unsigned int port = to_port(argv[1]);
+    char *path_root = argv[2];
 
     if (server_fd == -1) {
         perror("server did not open");
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
         }
 
         printf("Connection: %i\n", client_addr.sin_port);
-        handle_client(client_fd);
+        handle_client(client_fd, path_root);
     }
 
     close(server_fd);
