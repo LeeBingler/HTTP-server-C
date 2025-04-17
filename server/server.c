@@ -17,8 +17,8 @@ void handle_sigint(int sig) {
 }
 
 int parser(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Error: Missing port number\n");
+    if (argc != 3) {
+        printf("Error: Missing arg\n");
         return 1;
     }
 
