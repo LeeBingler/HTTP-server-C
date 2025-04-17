@@ -81,7 +81,7 @@ int parse_fl(char *line, request_t *request) {
 int parse_headers(request_t *request) {
     char *line;
 
-    while ((line = strtok(NULL, "\n\r")) && strlen(line) > 0) {
+    while ((line = strtok(NULL, "\n")) && strlen(line) > 2) {
         HttpHeader_t *node = calloc(1, sizeof(HttpHeader_t));
         char *two_point = strchr(line, ':');
 
@@ -113,6 +113,11 @@ int parse_headers(request_t *request) {
     return 0;
 }
 
+int parse_data(request_t *request) {
+
+    return 0;
+}
+
 request_t *parse_request(char *raw_request) {
     request_t *request = calloc(1, sizeof(request_t));
     char *line = strtok(raw_request, "\r\n");
@@ -134,7 +139,7 @@ request_t *parse_request(char *raw_request) {
         return NULL;
     }
 
-    if (0) {
+    if (1) {
         printf("method : %s path : %s protocol : %s \n\n", request->method, request->path, request->protocol);
         printf("headers : \n\n");
         HttpHeader_t *ptr = request->headers;
@@ -161,7 +166,7 @@ int handle_client(int client_fd) {
         close (client_fd);
         return 0;
     }
-
+    printf("raw request : \n\n%s\n\n", buff);
     request_t *request = parse_request(buff);
     if (request == NULL)
         return errno;
