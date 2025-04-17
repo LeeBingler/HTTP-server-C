@@ -1,23 +1,4 @@
-##
-## EPITECH PROJECT, 2022
-## Makefile
-## File description:
-## built library ,
-## implement the clean, fclean, re rule.
-##
-
-SRCSERVER	=	server.c	\
-				handle_client.c	\
-				parse_request.c	\
-
-
-SRCCLIENT	=	client.c	\
-
-CFLAGS	=	-g3 -g -Wall -Wextra -lncurses
-
-OBJSERVER	=	$(SRCSERVER:.c=.o)
-
-OBJCLIENT	=	$(SRCCLIENT:.c=.o)
+CFLAGS	=	-g3 -g -Wall -Wextra
 
 NAME	=	my-http-server
 
@@ -29,16 +10,21 @@ all: 	$(NAME)
 
 $(NAME):	$(NAMESERVER) $(NAMECLIENT)
 
-$(NAMESERVER):	$(OBJSERVER)
-	gcc -o $(NAMESERVER) $(OBJSERVER) $(CFLAGS) 
+$(NAMESERVER):
+	make -C server/
+	mv -t ./ server/$(NAMESERVER)
 
-$(NAMECLIENT):	$(OBJCLIENT)
-	gcc -o $(NAMECLIENT) $(OBJCLIENT) $(CFLAGS)
+$(NAMECLIENT):
+	make -C client/
+	mv -t ./ client/$(NAMECLIENT)
 
 clean:
-	rm -f $(OBJSERVER) $(OBJCLIENT)
+	make clean -C client/
+	make clean -C server/
 
 fclean: clean
 	rm -f $(NAME)
+	rm -f $(NAMECLIENT)
+	rm -f $(NAMESERVER)
 
 re:	fclean all
