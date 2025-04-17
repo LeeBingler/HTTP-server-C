@@ -122,20 +122,18 @@ request_t *parse_request(char *raw_request) {
         return request;
     }
 
-    // Parse first line
     if (parse_fl(line, request)) {
-        free(request);
+        free_request(request);
         return NULL;
     }
 
-    // Parse Header
     if (parse_headers(request)) {
-        free(request);
+        free_request(request);
         return NULL;
     }
 
     if(parse_datas(request)) {
-        free(request);
+        free_request(request);
         return NULL;
     }
 
