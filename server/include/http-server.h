@@ -23,6 +23,9 @@ typedef struct {
     char *datas;
 } request_t;
 
+//parse arg
+int parse_arg(int argc, char **argv);
+
 // parse request
 request_t *parse_request(char *request);
 void free_request(request_t *request);

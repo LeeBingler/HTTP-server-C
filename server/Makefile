@@ -1,6 +1,7 @@
-SRC	=	server.c	\
+SRC	=			server.c	\
 				handle_client.c	\
 				parse_request.c	\
+				parse_arg.c	\
 
 CFLAGS	=	-g3 -g -Wall -Wextra
 
@@ -11,7 +12,7 @@ NAME	=	my-server
 all: 	$(NAME)
 
 $(NAME):	$(OBJ)
-	gcc -o $(NAME) $(OBJ) $(CFLAGS) 
+	gcc -o $(NAME) $(OBJ) $(CFLAGS)
 
 clean:
 	rm -f $(OBJ)
