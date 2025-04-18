@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 
 #include "include/mime_types.h"
+#include "include/utils.h"
 
 int send_date(int client_fd) {
     time_t t = time(NULL);
@@ -48,12 +49,6 @@ int send_contentlength(int client_fd, FILE *file) {
     len_message = snprintf(message, sizeof(message), "Content-Lenght: %ld\r\n", file_size);
     send(client_fd, message, len_message, 0);
     return 0;
-}
-
-const char* get_file_extension(char *filename) {
-    const char *dot = strrchr(filename, '.');
-    if (!dot || dot == filename) return "";
-    return dot + 1;
 }
 
 int send_contenttype(int client_fd, char *filename) {

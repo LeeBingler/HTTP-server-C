@@ -5,18 +5,12 @@
 #include <arpa/inet.h>
 
 #include "include/http-server.h"
+#include "include/utils.h"
 
 volatile sig_atomic_t running = 1;
 
 void handle_sigint(int sig) {
     running = 0;
-}
-
-uint16_t char_to_port(char *port_nb) {
-    char *output;
-    long port = strtol(port_nb, &output, 10);
-
-    return htons((uint16_t) port); // htons reverse hexa value of port number
 }
 
 int main(int argc, char **argv) {
