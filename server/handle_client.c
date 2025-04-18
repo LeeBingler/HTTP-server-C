@@ -33,7 +33,36 @@ int send_date(int client_fd) {
     return 0;
 }
 
-int get_request(request_t *request, int client_fd, char *path_root) {
+int send_contentlenght(int client_fd, FILE *file) {
+    long file_size;
+    char message[64] = { 0 };
+    int len_message = 0;
+
+    // Get size of file
+    fseek(file, 0L, SEEK_END);
+    file_size = ftell(file);
+    rewind(file);
+
+    len_message = snprintf(message, sizeof(message), "Content-Lenght: %ld\r\n", file_size);
+    send(client_fd, message, len_message, 0);
+    return 0;
+}
+
+int send_contenttype(int client_fd) {
+    char *message = "Content-Type: text/plain\r\n";
+
+    send(client_fd, message, strlen(message), 0);
+    return 0;
+}
+
+int send_connection(int client_fd) {
+    char *message = "Connection: close\r\n";
+
+    send(client_fd, message, strlen(message), 0);
+    return 0;
+}
+
+int get_request(request_t *request, int client_fd) {
     size_t nbytes = 0;
     char response[BUFF_SIZE];
     FILE *file = fopen(request->path, "rb");
@@ -41,13 +70,13 @@ int get_request(request_t *request, int client_fd, char *path_root) {
     if (!file) {
         if (errno == ENOENT) {
             printf("Erreur 404\n");
-            send(client_fd, "HTTP/1.0 404 Not Found\n", 24, 0);
+            send(client_fd, "HTTP/1.1 404 Not Found\r\n", 25, 0);
             return 404;
         }
 
         if (errno == EACCES) {
             printf("Erreur 403\n");
-            send(client_fd, "HTTP/1.0 403 Forbidden\n", 24, 0);
+            send(client_fd, "HTTP/1.1 403 Forbidden\r\n", 25, 0);
             return 403;
         }
 
@@ -55,13 +84,17 @@ int get_request(request_t *request, int client_fd, char *path_root) {
         return errno;
     }
     // Send response
-    send(client_fd, "HTTP/1.0 200 OK\n", 17, 0);
+    send(client_fd, "HTTP/1.1 200 OK\r\n", 18, 0);
 
     // Send headers
     send_date(client_fd);
+    send_contentlenght(client_fd, file);
+    send_contenttype(client_fd);
+    send_connection(client_fd);
+
+    send(client_fd, "\r\n", 2, 0);  // end of headers
 
     // Send file
-    // PB: From times to times the html is not send if its the same one multiple time
     while ((nbytes = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
         int offset = 0;
         int sent = 0;
@@ -133,9 +166,9 @@ int handle_client(int client_fd, char *path_root) {
     normalize_request_path(request, path_root);
 
     if (strcmp(request->method, "GET") == 0) {
-        get_request(request, client_fd, path_root);
+        get_request(request, client_fd);
     } else {
-        char *mess_header = "HTTP/1.0 501 Not Implemented\n";
+        char *mess_header = "HTTP/1.0 501 Not Implemented\r\n";
         send(client_fd, mess_header, strlen(mess_header), MSG_CONFIRM);
     }
 
