@@ -115,7 +115,7 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
         close (client_fd);
         return 0;
     }
-    printf("raw: \n%s\n\n", buff);
+
     request_t *request = parse_request(buff);
     if (request == NULL)
         return errno;
@@ -137,7 +137,7 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
         status_code = get_request(request, client_fd);
     } else {
         status_code = 501;
-        char *mess_header = "HTTP/1.1 501 Not Implemented\r\n";
+        char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
         send(client_fd, mess_header, strlen(mess_header), 0);
     }
 
