@@ -115,13 +115,20 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
         close (client_fd);
         return 0;
     }
-
+    printf("raw: \n%s\n\n", buff);
     request_t *request = parse_request(buff);
     if (request == NULL)
         return errno;
 
     if ((status_code = normalize_request_path(request, path_root))) {
         if (status_code == 403) send(client_fd, "HTTP/1.1 403 Forbidden\r\n\r\n", 28, 0);
+        free_request(request);
+        return status_code;
+    }
+
+    if (strcmp(request->protocol, "HTTP/1.1") == 0 && request->host == NULL) {
+        status_code = 400;
+        send(client_fd, "HTTP/1.1 400 Bad Request\r\n\r\n", 30, 0);
         free_request(request);
         return status_code;
     }

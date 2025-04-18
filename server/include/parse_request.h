@@ -11,6 +11,7 @@ typedef struct {
     char *path;
     char *protocol;
     HttpHeader_t *headers;
+    HttpHeader_t *host;
     int header_count;
     char *datas;
 } request_t;

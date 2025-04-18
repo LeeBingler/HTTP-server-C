@@ -1,4 +1,9 @@
-#include "include/http-server.h"
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "include/parse_request.h"
 
 void free_request(request_t *request) {
     if (request == NULL) return;
@@ -96,6 +101,8 @@ int parse_headers(request_t *request) {
             ptr->next = node;
             request->header_count++;
         }
+
+        if (strcmp(node->key, "Host") == 0) request->host = node;
     }
 
     return 0;
