@@ -9,11 +9,11 @@ int send_date(int client_fd) {
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     char s[33] = { 0 };
-    char *str_date = "Date: ";
-    int len_strdate = strlen(str_date);
-
-    size_t ret = strftime(s, sizeof(s), "%a, %d %b %Y %T %z%n",tm);
-    char *date = calloc(33 + len_strdate, sizeof(char));
+    char *prefix = "Date: ";
+    char *suffix = "\r\n";
+    size_t ret = strftime(s, sizeof(s), "%a, %d %b %Y %T %z",tm);
+    size_t total_len = strlen(s) + strlen(prefix) + strlen(suffix);
+    char *date = calloc(total_len + 1, sizeof(char));
 
     if (ret == 0) {
         perror("strftime()");
@@ -25,10 +25,11 @@ int send_date(int client_fd) {
         return 1;
     }
 
-    strncpy(date, str_date, len_strdate);
-    memcpy(date + len_strdate, s, 33);
+    strcpy(date, prefix);
+    strcat(date, s);
+    strcat(date, suffix);
 
-    send(client_fd, date, strlen(date), 0);
+    send(client_fd, date, total_len, 0);
     free(date);
     return 0;
 }
@@ -48,10 +49,47 @@ int send_contentlenght(int client_fd, FILE *file) {
     return 0;
 }
 
-int send_contenttype(int client_fd) {
-    char *message = "Content-Type: text/plain\r\n";
+char* get_file_extension(char *filename) {
+    char *dot = strrchr(filename, '.');
+    if (!dot || dot == filename) return "";
+    return dot + 1;
+}
 
-    send(client_fd, message, strlen(message), 0);
+char* get_mime_type(char *ext) {
+    if (strcmp(ext, "html") == 0) return "text/html";
+    if (strcmp(ext, "htm") == 0)  return "text/html";
+    if (strcmp(ext, "css") == 0)  return "text/css";
+    if (strcmp(ext, "js") == 0)   return "application/javascript";
+    if (strcmp(ext, "jpg") == 0)  return "image/jpeg";
+    if (strcmp(ext, "jpeg") == 0) return "image/jpeg";
+    if (strcmp(ext, "png") == 0)  return "image/png";
+    if (strcmp(ext, "gif") == 0)  return "image/gif";
+    if (strcmp(ext, "txt") == 0)  return "text/plain";
+    if (strcmp(ext, "pdf") == 0)  return "application/pdf";
+
+    return "application/octet-stream";
+}
+
+int send_contenttype(int client_fd, char *filename) {
+    char *ext = get_file_extension(filename);
+    char *mime_type = get_mime_type(ext);
+    const char *prefix = "Content-Type: ";
+    const char *suffix = "\r\n";
+
+    size_t total_len = strlen(prefix) + strlen(mime_type) + strlen(suffix);
+
+    char *message = malloc(total_len + 1);
+    if (!message) {
+        perror("malloc");
+        return -1;
+    }
+
+    strcpy(message, prefix);
+    strcat(message, mime_type);
+    strcat(message, suffix);
+
+    send(client_fd, message, total_len, 0);
+    free(message);
     return 0;
 }
 
@@ -89,7 +127,7 @@ int get_request(request_t *request, int client_fd) {
     // Send headers
     send_date(client_fd);
     send_contentlenght(client_fd, file);
-    send_contenttype(client_fd);
+    send_contenttype(client_fd, request->path);
     send_connection(client_fd);
 
     send(client_fd, "\r\n", 2, 0);  // end of headers
@@ -168,7 +206,7 @@ int handle_client(int client_fd, char *path_root) {
     if (strcmp(request->method, "GET") == 0) {
         get_request(request, client_fd);
     } else {
-        char *mess_header = "HTTP/1.0 501 Not Implemented\r\n";
+        char *mess_header = "HTTP/1.1 501 Not Implemented\r\n";
         send(client_fd, mess_header, strlen(mess_header), MSG_CONFIRM);
     }
 
