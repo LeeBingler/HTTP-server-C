@@ -49,30 +49,30 @@ int send_contentlenght(int client_fd, FILE *file) {
     return 0;
 }
 
-char* get_file_extension(char *filename) {
-    char *dot = strrchr(filename, '.');
+const char* get_file_extension(char *filename) {
+    const char *dot = strrchr(filename, '.');
     if (!dot || dot == filename) return "";
     return dot + 1;
 }
 
-char* get_mime_type(char *ext) {
-    if (strcmp(ext, "html") == 0) return "text/html";
-    if (strcmp(ext, "htm") == 0)  return "text/html";
-    if (strcmp(ext, "css") == 0)  return "text/css";
-    if (strcmp(ext, "js") == 0)   return "application/javascript";
-    if (strcmp(ext, "jpg") == 0)  return "image/jpeg";
-    if (strcmp(ext, "jpeg") == 0) return "image/jpeg";
-    if (strcmp(ext, "png") == 0)  return "image/png";
-    if (strcmp(ext, "gif") == 0)  return "image/gif";
-    if (strcmp(ext, "txt") == 0)  return "text/plain";
-    if (strcmp(ext, "pdf") == 0)  return "application/pdf";
+const char* get_mime_type(const char *ext) {
+    if (strcasecmp(ext, "html") == 0) return "text/html";
+    if (strcasecmp(ext, "htm") == 0)  return "text/html";
+    if (strcasecmp(ext, "css") == 0)  return "text/css";
+    if (strcasecmp(ext, "js") == 0)   return "application/javascript";
+    if (strcasecmp(ext, "jpg") == 0)  return "image/jpeg";
+    if (strcasecmp(ext, "jpeg") == 0) return "image/jpeg";
+    if (strcasecmp(ext, "png") == 0)  return "image/png";
+    if (strcasecmp(ext, "gif") == 0)  return "image/gif";
+    if (strcasecmp(ext, "txt") == 0)  return "text/plain";
+    if (strcasecmp(ext, "pdf") == 0)  return "application/pdf";
 
     return "application/octet-stream";
 }
 
 int send_contenttype(int client_fd, char *filename) {
-    char *ext = get_file_extension(filename);
-    char *mime_type = get_mime_type(ext);
+    const char *ext = get_file_extension(filename);
+    const char *mime_type = get_mime_type(ext);
     const char *prefix = "Content-Type: ";
     const char *suffix = "\r\n";
 
