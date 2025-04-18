@@ -12,7 +12,7 @@ void handle_sigint(int sig) {
     running = 0;
 }
 
-uint16_t to_port(char *port_nb) {
+uint16_t char_to_port(char *port_nb) {
     char *output;
     long port = strtol(port_nb, &output, 10);
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
         return 1;
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    unsigned int port = to_port(argv[1]);
+    unsigned int port = char_to_port(argv[1]);
     char *path_root = argv[2];
 
     if (server_fd == -1) {
@@ -71,8 +71,7 @@ int main(int argc, char **argv) {
             return errno;
         }
 
-        printf("Connection: %i\n", client_addr.sin_port);
-        handle_client(client_fd, path_root);
+        handle_client(client_fd, client_addr, path_root);
     }
 
     close(server_fd);

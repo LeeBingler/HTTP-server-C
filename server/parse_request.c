@@ -45,7 +45,6 @@ int parse_fl(char *line, request_t *request) {
 
     if (!map[0] || !map[1] || !map[2]) {
         perror("First line request invalid");
-        free(request);
         return errno;
     }
 
