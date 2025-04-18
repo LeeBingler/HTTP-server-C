@@ -1,8 +1,37 @@
-#include <dirent.h>
+#include <stdio.h>
+#include <time.h>
 
 #include "include/http-server.h"
 
 #define BUFF_SIZE 1024
+
+int send_date(int client_fd) {
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[33] = { 0 };
+    char *str_date = "Date: ";
+    int len_strdate = strlen(str_date);
+
+    size_t ret = strftime(s, sizeof(s), "%a, %d %b %Y %T %z%n",tm);
+    char *date = calloc(33 + len_strdate, sizeof(char));
+
+    if (ret == 0) {
+        perror("strftime()");
+        return 1;
+    }
+
+    if (!date) {
+        perror("calloc() send_date");
+        return 1;
+    }
+
+    strncpy(date, str_date, len_strdate);
+    memcpy(date + len_strdate, s, 33);
+
+    send(client_fd, date, strlen(date), 0);
+    free(date);
+    return 0;
+}
 
 int get_request(request_t *request, int client_fd, char *path_root) {
     size_t nbytes = 0;
@@ -25,8 +54,11 @@ int get_request(request_t *request, int client_fd, char *path_root) {
         printf("errno %i : %s\n", errno, strerror(errno));
         return errno;
     }
-    // Send header
+    // Send response
     send(client_fd, "HTTP/1.0 200 OK\n", 17, 0);
+
+    // Send headers
+    send_date(client_fd);
 
     // Send file
     // PB: From times to times the html is not send if its the same one multiple time
