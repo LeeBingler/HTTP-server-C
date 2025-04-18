@@ -2,6 +2,7 @@ SRC	=			server.c	\
 				handle_client.c	\
 				parse_request.c	\
 				parse_arg.c	\
+				http_headers.c	\
 
 CFLAGS	=	-g3 -g -Wall -Wextra
 
