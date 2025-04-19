@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
     }
 
     signal(SIGINT, handle_sigint);
+    printf("Server listen on : http://localhost:8080\n");
 
     struct sockaddr_in client_addr = { 0 };
     unsigned int addrlen = sizeof(client_addr);
