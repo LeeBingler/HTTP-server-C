@@ -1,23 +1,30 @@
-SRC	=			src/server.c	\
-				src/handle_client.c	\
-				src/parse_request.c	\
-				src/parse_arg.c	\
-				src/http_headers.c	\
-				src/status_log.c	\
-				src/utils.c	\
+# === Configuration ===
 
-CC = gcc
+CC 		:= 	gcc
 
-CFLAGS	=	-g3 -g -Wall -Wextra
+CFLAGS	:=	-g3 -Wall -Wextra
 
-NAME	=	http-server-c
+NAME	:=	http-server-c
 
-OBJ	=	$(SRC:.c=.o)
+
+SRC		:=	src/server.c	\
+			src/handle_client.c	\
+			src/parse_request.c	\
+			src/parse_arg.c	\
+			src/http_headers.c	\
+			src/status_log.c	\
+			src/utils.c	\
+
+OBJ		:=	$(SRC:.c=.o)
+
+
+# === Rules ===
+
 
 all: 	$(NAME)
 
 $(NAME):	$(OBJ)
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
 
 clean:
 	rm -f $(OBJ)
@@ -26,3 +33,5 @@ fclean: clean
 	rm -f $(NAME)
 
 re:	fclean all
+
+.PHONY: all clean fclean re
