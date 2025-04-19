@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "include/parse_request.h"
+#include "../include/parse_request.h"
 
 void free_request(request_t *request) {
     if (request == NULL) return;

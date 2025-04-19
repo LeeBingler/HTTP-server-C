@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <netinet/in.h>
 
-#include "include/http-server.h"
-#include "include/http-headers.h"
-#include "include/parse_request.h"
-#include "include/status_log.h"
+#include "../include/http-server.h"
+#include "../include/http-headers.h"
+#include "../include/parse_request.h"
+#include "../include/status_log.h"
 
 
 #define BUFF_SIZE 1024

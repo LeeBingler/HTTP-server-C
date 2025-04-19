@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "include/mime_types.h"
-#include "include/utils.h"
+#include "../include/mime_types.h"
+#include "../include/utils.h"
 
 int send_date(int client_fd) {
     time_t t = time(NULL);

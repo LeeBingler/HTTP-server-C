@@ -4,8 +4,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "include/http-server.h"
-#include "include/utils.h"
+#include "../include/http-server.h"
+#include "../include/utils.h"
 
 volatile sig_atomic_t running = 1;
 

@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include "include/http-server.h"
+#include "../include/http-server.h"
 
 void print_helper() {
     printf("Usage: my-server [PORT] [ROOT_DIR]\nOpen a web server on PORT with ROOT_DIR as root.\n\nExamples:\n   ./my-server 8080 ./root/\n");
