@@ -16,7 +16,7 @@ int parse_dirname(char *path, parse *parse_s) {
         return 1;
     }
 
-    parse_s->root = (const char *) path;
+    parse_s->root = path;
 
     return 0;
 }
@@ -29,7 +29,7 @@ int parse_port(char *port, parse *parse_s) {
         }
     }
 
-    parse_s->port = (const uint16_t) char_to_port(port);
+    parse_s->port = char_to_port(port);
 
     return 0;
 }

@@ -3,8 +3,8 @@
 #include <stdint.h>
 
 typedef struct parse {
-    const char *root;
-    const uint16_t *port;
+    char *root;
+    uint16_t port;
 } parse;
 
 void print_helper();
