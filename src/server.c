@@ -6,6 +6,7 @@
 
 #include "../include/http-server.h"
 #include "../include/utils.h"
+#include "../include/parse_arg.h"
 
 volatile sig_atomic_t running = 1;
 
@@ -14,17 +15,15 @@ void handle_sigint(int sig) {
 }
 
 int main(int argc, char **argv) {
-    if (parse_arg(argc, argv))
-        return 1;
+    parse *parse_s = parse_arg(argc, argv);
+    if (!parse_s) return 1;
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    unsigned int port = char_to_port(argv[1]);
-    char *path_root = argv[2];
-
     if (server_fd == -1) {
         perror("server did not open");
         return errno;
     }
+
     int true = 1;
     if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) == -1) {
         perror("setsockopt()");
@@ -34,7 +33,7 @@ int main(int argc, char **argv) {
 
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
-        .sin_port = port,
+        .sin_port = parse_s->port,
         .sin_addr.s_addr = INADDR_ANY // Listen on all port
     };
 
@@ -66,9 +65,10 @@ int main(int argc, char **argv) {
             return errno;
         }
 
-        handle_client(client_fd, client_addr, path_root);
+        handle_client(client_fd, client_addr, parse_s->root);
     }
 
     close(server_fd);
+    free(parse_s);
     return 0;
 }

@@ -10,6 +10,4 @@
 #include <netinet/in.h>
 
 
-int parse_arg(int argc, char **argv);
-
 int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root);
