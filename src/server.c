@@ -16,7 +16,7 @@ void handle_sigint(int sig) {
 
 int main(int argc, char **argv) {
     parse *parse_s = parse_arg(argc, argv);
-    if (!parse_s) return 1;
+    if (!parse_s) return 808;
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     }
 
     signal(SIGINT, handle_sigint);
-    printf("Server listen on : http://localhost:8080\n");
+    printf("Server listen on : http://localhost:%i\n", ntohs(parse_s->port));
 
     struct sockaddr_in client_addr = { 0 };
     unsigned int addrlen = sizeof(client_addr);
