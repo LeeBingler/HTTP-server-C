@@ -10,20 +10,24 @@
 #define BUFF_SIZE 1024
 
 int send_file(int client_fd, FILE *file) {
-    size_t nbytes = 0;
+    size_t bytes_read = 0;
     char response[BUFF_SIZE] = { 0 };
 
-    while ((nbytes = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
-        int offset = 0;
-        int sent = 0;
-        while ((sent = send(client_fd, response + offset, nbytes, 0)) > 0 || (sent == -1 && errno == EINTR) ) {
-            if (sent > 0) {
-                offset += sent;
-                nbytes -= sent;
+    while ((bytes_read = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
+        size_t total_sent = 0;
+
+        while (total_sent < bytes_read) {
+            int sent = send(client_fd, response + total_sent, bytes_read - total_sent, 0);
+
+            if (sent < 0) {
+                if (errno == EINTR) continue;
+                return -1;
             }
+
+            total_sent += sent;
         }
     }
-    errno = 0;
+
 
     return 0;
 }
@@ -35,77 +39,73 @@ int get_request(request_t *request, int client_fd) {
         if (errno == ENOENT || errno == ENOTDIR) {
             send(client_fd, "HTTP/1.1 404 Not Found\r\n", 25, 0);
             return 404;
-        }
-
-        if (errno == EACCES) {
+        } else if (errno == EACCES) {
             send(client_fd, "HTTP/1.1 403 Forbidden\r\n", 25, 0);
             return 403;
         }
 
-        printf("errno %i : %s\n", errno, strerror(errno));
+        perror("fopen get_request");
         return errno;
     }
+
     // Send response
     send(client_fd, "HTTP/1.1 200 OK\r\n", 18, 0);
-
-    // Send headers
     send_date(client_fd);
     send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
     send_connection(client_fd);
     send(client_fd, "\r\n", 2, 0);  // end of headers
 
-    // Send file
     send_file(client_fd, file);
-
     fclose(file);
+
+
     return 200;
 }
 
 int normalize_request_path(request_t *request, char *path_root) {
-    int len_path = strlen(request->path);
-    int len_root = strlen(path_root);
-
-    // verify that path is secure
     if (strstr(request->path, "..")) {
-        return 403;
+        return 403; // Prevent directory traversal
     }
+
+    size_t len_path = strlen(request->path);
 
     // make index.html default if the path end by "/" ==> move it before get_request call
     if (request->path[len_path - 1] == '/') {
-        char *str_index = "index.html";
-        int len_index = strlen(str_index);
-        char *new_path = calloc(len_path + len_index + 1, sizeof(char));
+        const char *index = "index.html";
+        size_t new_len = len_path + strlen(index) + 1;
 
+        char *new_path = calloc(new_len, sizeof(char));
         if (!new_path) return -1;
 
         strncpy(new_path, request->path, len_path);
-        strncat(new_path, str_index, len_index);
-        free(request->path);
+        strcat(new_path, index);
 
+        free(request->path);
         request->path = new_path;
     }
 
     // add path_root to path
     len_path = strlen(request->path);
-    char *new_path = calloc(len_path + len_root + 1, sizeof(char));
-    if (!new_path) return -1;
+    size_t len_root = strlen(path_root);
+    char *full_path = calloc(len_path + len_root + 1, sizeof(char));
+    if (!full_path) return -1;
 
-    memcpy(new_path, path_root, len_root);
-    memcpy(new_path + len_root, request->path, len_path);
+    memcpy(full_path, path_root, len_root);
+    memcpy(full_path + len_root, request->path, len_path);
 
     free(request->path);
-    request->path = new_path;
+    request->path = full_path;
 
-    return 0;
+
+    return 200;
 }
 
 int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root) {
-    int status_code = 200;
     char buff[BUFF_SIZE] = { 0 };
     int byte_recv = recv(client_fd, buff, BUFF_SIZE, MSG_DONTWAIT);
 
-    if (byte_recv == -1) {
+    if (byte_recv < 0 ) {
         perror("recv()");
         close(client_fd);
         return errno;
@@ -117,33 +117,39 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
     }
 
     request_t *request = parse_request(buff);
-    if (request == NULL)
+    if (!request) {
+        close(client_fd);
         return errno;
+    }
 
-    if ((status_code = normalize_request_path(request, path_root))) {
-        if (status_code == 403) send(client_fd, "HTTP/1.1 403 Forbidden\r\n\r\n", 28, 0);
+    int status_code = normalize_request_path(request, path_root);
+    if (status_code != 200) {
+        if (status_code == 403) {
+            send(client_fd, "HTTP/1.1 403 Forbidden\r\n\r\n", 28, 0);
+        }
         free_request(request);
+        close(client_fd);
         return status_code;
     }
 
     if (strcmp(request->protocol, "HTTP/1.1") == 0 && request->host == NULL) {
-        status_code = 400;
         send(client_fd, "HTTP/1.1 400 Bad Request\r\n\r\n", 30, 0);
         free_request(request);
-        return status_code;
+        close(client_fd);
+        return 400;
     }
 
     if (strcmp(request->method, "GET") == 0) {
         status_code = get_request(request, client_fd);
     } else {
-        status_code = 501;
-        char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
+        const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
         send(client_fd, mess_header, strlen(mess_header), 0);
+        status_code = 501;
     }
 
     status_log(request, client_addr, status_code);
 
-    close(client_fd);
     free_request(request);
+    close(client_fd);
     return status_code;
 }
