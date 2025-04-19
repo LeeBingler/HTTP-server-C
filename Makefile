@@ -1,30 +1,28 @@
+SRC	=			src/server.c	\
+				src/handle_client.c	\
+				src/parse_request.c	\
+				src/parse_arg.c	\
+				src/http_headers.c	\
+				src/status_log.c	\
+				src/utils.c	\
+
+CC = gcc
+
 CFLAGS	=	-g3 -g -Wall -Wextra
 
-NAME	=	my-http-server
+NAME	=	http-server-c
 
-NAMESERVER	=	my-server
-
-NAMECLIENT	=	my-client
+OBJ	=	$(SRC:.c=.o)
 
 all: 	$(NAME)
 
-$(NAME):	$(NAMESERVER) $(NAMECLIENT)
-
-$(NAMESERVER):
-	make -C server/
-	mv -t ./ server/$(NAMESERVER)
-
-$(NAMECLIENT):
-	make -C client/
-	mv -t ./ client/$(NAMECLIENT)
+$(NAME):	$(OBJ)
+	$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
 
 clean:
-	make clean -C client/
-	make clean -C server/
+	rm -f $(OBJ)
 
 fclean: clean
 	rm -f $(NAME)
-	rm -f $(NAMECLIENT)
-	rm -f $(NAMESERVER)
 
 re:	fclean all
