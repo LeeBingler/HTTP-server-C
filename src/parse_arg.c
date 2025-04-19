@@ -34,7 +34,7 @@ static int parse_dirname(char *path, parse *parse_s) {
 static int parse_port(char *port, parse *parse_s) {
     for (int i = 0; port[i] != '\0'; i++) {
         if (port[i] < '0' || port[i] > '9') {
-            fprintf(stderr, "my-server: '%s' is not a valid port number.\n", port_str);
+            fprintf(stderr, "my-server: '%s' is not a valid port number.\n", port);
             fprintf(stderr, "Try 'my-server --help' for more information.\n");
             return 1;
         }
@@ -62,7 +62,7 @@ parse *parse_arg(int argc, char **argv) {
 
     for (int i = 0; i < argc; i++) {
         if ((strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) && i + 1 < argc) {
-            if (|| parse_port(argv[i + 1], parse_s)) {
+            if (parse_port(argv[i + 1], parse_s)) {
                 free(parse_s);
                 return NULL;
             }
