@@ -51,6 +51,8 @@ This will compile the source files and generate the executable.
 
 - include/: Contains header files.
 
+- tests/: Contains tests files.
+
 - Makefile: Build configuration.
 
 - README.md: Project documentation.​
