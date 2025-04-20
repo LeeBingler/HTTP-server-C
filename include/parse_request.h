@@ -14,6 +14,7 @@ typedef struct {
     HttpHeader_t *host;
     int header_count;
     char *datas;
+    int keep_alive;
 } request_t;
 
 request_t *parse_request(char *request);

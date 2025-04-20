@@ -90,6 +90,13 @@ int parse_headers(request_t *request) {
         request->header_count++;
 
         if (strcmp(node->key, "Host") == 0) request->host = node;
+
+        if (strcmp(node->key, "Connection") == 0) {
+            if (strcasecmp(node->value, "keep-alive") == 0)
+                request->keep_alive = 1;
+            else if (strcasecmp(node->value, "close") == 0)
+                request->keep_alive = 0;
+        }
     }
 
     return 0;

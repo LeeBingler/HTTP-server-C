@@ -56,7 +56,7 @@ int get_request(request_t *request, int client_fd) {
     send_date(client_fd);
     send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
-    send_connection(client_fd);
+    send_connection(client_fd, 0);
     send(client_fd, "\r\n", 2, 0);  // end of headers
 
     send_file(client_fd, file);

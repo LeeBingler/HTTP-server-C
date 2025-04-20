@@ -74,9 +74,8 @@ int send_contenttype(int client_fd, char *filename) {
     return 0;
 }
 
-int send_connection(int client_fd) {
-    char *message = "Connection: close\r\n";
-
+int send_connection(int client_fd, int keep_alive) {
+    const char *message = keep_alive ? "Connection: keep-alive\r\n" : "Connection: close\r\n";
     send(client_fd, message, strlen(message), 0);
     return 0;
 }
