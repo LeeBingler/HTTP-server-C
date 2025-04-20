@@ -20,7 +20,7 @@ int send_file(int client_fd, FILE *file) {
         size_t total_sent = 0;
 
         while (total_sent < bytes_read) {
-            int sent = send(client_fd, response + total_sent, bytes_read - total_sent, 0);
+            ssize_t sent = send(client_fd, response + total_sent, bytes_read - total_sent, 0);
 
             if (sent < 0) {
                 if (errno == EINTR) continue;
@@ -52,7 +52,7 @@ int get_request(request_t *request, int client_fd) {
     }
 
     // Send response
-    send(client_fd, "HTTP/1.1 200 OK\r\n", 18, 0);
+    send(client_fd, "HTTP/1.1 200 OK\r\n", 17, 0);
     send_date(client_fd);
     send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
@@ -111,7 +111,7 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
 
     while (1) {
         memset(buff, 0, BUFF_SIZE);
-        int byte_recv = recv(client_fd, buff, BUFF_SIZE, MSG_DONTWAIT);
+        int byte_recv = recv(client_fd, buff, BUFF_SIZE, 0);
 
         if (byte_recv < 0 ) {
             if (errno == EINTR) continue;
@@ -124,7 +124,10 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
         }
 
         request_t *request = parse_request(buff);
-        if (!request) break;
+        if (!request) {
+            status_code = 400;
+            break;
+        }
 
         if (strcmp(request->protocol, "HTTP/1.1") == 0 && request->host == NULL) {
             status_code = 400;
