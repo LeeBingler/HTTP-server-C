@@ -1,4 +1,4 @@
-## HTTP-server-C
+# HTTP-server-C
 
 A lightweight HTTP server built from scratch in C, designed for educational purposes and to demonstrate fundamental networking concepts.
 
