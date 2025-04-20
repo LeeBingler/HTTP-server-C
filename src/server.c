@@ -1,52 +1,66 @@
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "../include/http-server.h"
-#include "../include/utils.h"
+#include "../include/handle_client.h"
 #include "../include/parse_arg.h"
 
-volatile sig_atomic_t running = 1;
+static volatile sig_atomic_t running = 1;
 
 void handle_sigint(int sig) {
+    (void)sig;
     running = 0;
 }
 
-int main(int argc, char **argv) {
-    parse *parse_s = parse_arg(argc, argv);
-    if (!parse_s) return 808;
-
+int setup_server_socket(uint16_t port) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
         perror("server did not open");
-        return errno;
+        return -1;
     }
 
-    int true = 1;
-    if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) == -1) {
+    int enable = 1;
+    if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
         perror("setsockopt()");
         close(server_fd);
-        return errno;
+        return -1;
     }
 
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
-        .sin_port = parse_s->port,
+        .sin_port = port,
         .sin_addr.s_addr = INADDR_ANY // Listen on all port
     };
 
     if (bind(server_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
         perror("bind()");
         close(server_fd);
-        return errno;
+        return -1;
     }
 
     if (listen(server_fd, 10) == -1) {
         perror("listen()");
         close(server_fd);
-        return errno;
+        return -1;
+    }
+
+    return server_fd;
+}
+
+int main(int argc, char **argv) {
+    parse *parse_s = parse_arg(argc, argv);
+    if (!parse_s) return EXIT_FAILURE;
+
+    int server_fd = setup_server_socket(parse_s->port);
+    if (server_fd == -1) {
+        free(parse_s);
+        return EXIT_FAILURE;
     }
 
     signal(SIGINT, handle_sigint);
@@ -60,9 +74,9 @@ int main(int argc, char **argv) {
         client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &addrlen);
 
         if (client_fd == -1) {
+            if (errno == EINTR) continue; // Interrupted by SIGINT
             perror("accept()");
-            close(server_fd);
-            return errno;
+            break;
         }
 
         handle_client(client_fd, client_addr, parse_s->root);
@@ -70,5 +84,6 @@ int main(int argc, char **argv) {
 
     close(server_fd);
     free(parse_s);
-    return 0;
+    printf("\nServer shut down gracefully.\n");
+    return EXIT_SUCCESS;
 }

@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <netinet/in.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-#include "../include/http-server.h"
 #include "../include/http-headers.h"
 #include "../include/parse_request.h"
 #include "../include/status_log.h"
