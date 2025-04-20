@@ -26,6 +26,11 @@ static int parse_dirname(char *path, parse *parse_s) {
         return 1;
     }
 
+    size_t len = strlen(path);
+    if (len > 1 && path[len - 1] == '/') {
+        path[len - 1] = '\0';
+    }
+
     parse_s->root = path;
 
     return 0;
