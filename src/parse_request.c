@@ -53,6 +53,27 @@ int parse_fl(char *line, request_t *request) {
     return 0;
 }
 
+int set_keep_alive(request_t *request) {
+    HttpHeader_t *ptr = request->headers;
+
+    while (ptr) {
+        if (strcmp(ptr->key, "Connection") == 0) {
+            if (strcasecmp(ptr->value, "keep-alive") == 0)
+                request->keep_alive = 1;
+            else
+                request->keep_alive = 0;
+            return 0;
+        }
+        ptr = ptr->next;
+    }
+    if (strcmp(request->protocol, "HTTP/1.1") == 0)
+        request->keep_alive = 1;
+    else
+        request->keep_alive = 0;
+
+    return 0;
+}
+
 int parse_headers(request_t *request) {
     char *line;
 
@@ -90,14 +111,8 @@ int parse_headers(request_t *request) {
         request->header_count++;
 
         if (strcmp(node->key, "Host") == 0) request->host = node;
-
-        if (strcmp(node->key, "Connection") == 0) {
-            if (strcasecmp(node->value, "keep-alive") == 0)
-                request->keep_alive = 1;
-            else if (strcasecmp(node->value, "close") == 0)
-                request->keep_alive = 0;
-        }
     }
+
 
     return 0;
 }
@@ -126,6 +141,9 @@ request_t *parse_request(char *raw_request) {
         free_request(request);
         return NULL;
     }
+
+    set_keep_alive(request);
+
 
     return request;
 }

@@ -56,7 +56,7 @@ int get_request(request_t *request, int client_fd) {
     send_date(client_fd);
     send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
-    send_connection(client_fd, 0);
+    send_connection(client_fd, request->keep_alive);
     send(client_fd, "\r\n", 2, 0);  // end of headers
 
     send_file(client_fd, file);
@@ -105,54 +105,61 @@ int normalize_request_path(request_t *request, char *path_root) {
 }
 
 int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root) {
-    char buff[BUFF_SIZE] = { 0 };
-    int byte_recv = recv(client_fd, buff, BUFF_SIZE, MSG_DONTWAIT);
+    char buff[BUFF_SIZE];
+    int status_code = 200;
+    int keep_alive;
 
-    if (byte_recv < 0 ) {
-        perror("recv()");
-        close(client_fd);
-        return errno;
+    while (1) {
+        memset(buff, 0, BUFF_SIZE);
+        int byte_recv = recv(client_fd, buff, BUFF_SIZE, MSG_DONTWAIT);
 
-    } else if (byte_recv == 0) {
-        printf("Client disconnected\n");
-        close (client_fd);
-        return 0;
-    }
+        if (byte_recv < 0 ) {
+            if (errno == EINTR) continue;
+            perror("recv()");
+            break;
 
-    request_t *request = parse_request(buff);
-    if (!request) {
-        close(client_fd);
-        return errno;
-    }
-
-    int status_code = normalize_request_path(request, path_root);
-    if (status_code != 200) {
-        if (status_code == 403) {
-            send(client_fd, "HTTP/1.1 403 Forbidden\r\n\r\n", 28, 0);
+        } else if (byte_recv == 0) {
+            printf("Client disconnected\n");
+            break;
         }
+
+        request_t *request = parse_request(buff);
+        if (!request) break;
+
+        if (strcmp(request->protocol, "HTTP/1.1") == 0 && request->host == NULL) {
+            status_code = 400;
+            send(client_fd, "HTTP/1.1 400 Bad Request\r\n\r\n", 30, 0);
+            status_log(request, client_addr, status_code);
+            free_request(request);
+            break;
+        }
+
+        status_code = normalize_request_path(request, path_root);
+        if (status_code != 200) {
+            if (status_code == 403) {
+                send(client_fd, "HTTP/1.1 403 Forbidden\r\n\r\n", 28, 0);
+            }
+            status_log(request, client_addr, status_code);
+            free_request(request);
+            break;
+        }
+
+
+        if (strcmp(request->method, "GET") == 0) {
+            status_code = get_request(request, client_fd);
+        } else {
+            const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
+            send(client_fd, mess_header, strlen(mess_header), 0);
+            status_code = 501;
+        }
+
+        status_log(request, client_addr, status_code);
+
+        keep_alive = request->keep_alive;
         free_request(request);
-        close(client_fd);
-        return status_code;
+        if (!keep_alive) break;
     }
 
-    if (strcmp(request->protocol, "HTTP/1.1") == 0 && request->host == NULL) {
-        send(client_fd, "HTTP/1.1 400 Bad Request\r\n\r\n", 30, 0);
-        free_request(request);
-        close(client_fd);
-        return 400;
-    }
-
-    if (strcmp(request->method, "GET") == 0) {
-        status_code = get_request(request, client_fd);
-    } else {
-        const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
-        send(client_fd, mess_header, strlen(mess_header), 0);
-        status_code = 501;
-    }
-
-    status_log(request, client_addr, status_code);
-
-    free_request(request);
     close(client_fd);
     return status_code;
 }
