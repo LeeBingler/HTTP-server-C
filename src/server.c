@@ -25,8 +25,9 @@ int setup_server_socket(uint16_t port) {
         return -1;
     }
 
+    // addr reusabble after crash
     int enable = 1;
-    if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
         perror("setsockopt()");
         close(server_fd);
         return -1;

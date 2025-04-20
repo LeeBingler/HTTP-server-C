@@ -109,12 +109,22 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
     int status_code = 200;
     int keep_alive;
 
+    struct timeval timeout = { .tv_sec = 5, .tv_usec = 0 };
+    if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+        close(client_fd);
+        return -1;
+    }
+
     while (1) {
         memset(buff, 0, BUFF_SIZE);
         int byte_recv = recv(client_fd, buff, BUFF_SIZE, 0);
 
         if (byte_recv < 0 ) {
-            if (errno == EINTR) continue;
+            if (errno == EINTR) continue; // signal interrupt
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                printf("Timeout: client inactive for too long\n");
+                break;
+            }
             perror("recv()");
             break;
 
