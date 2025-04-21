@@ -2,13 +2,13 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-#include "../../include/http/handle_client.h"
+#include "../../include/config.h"
 
 int send_file(int client_fd, FILE *file) {
     size_t bytes_read = 0;
-    char response[BUFF_SIZE] = { 0 };
+    char response[CHUNK_SIZE] = { 0 };
 
-    while ((bytes_read = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
+    while ((bytes_read = fread(response, sizeof(char), CHUNK_SIZE, file)) > 0) {
         size_t total_sent = 0;
 
         while (total_sent < bytes_read) {

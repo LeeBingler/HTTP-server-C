@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "../../include/config.h"
 #include "../../include/http/handle_client.h"
 #include "../../include/core/parse_arg.h"
 
@@ -45,7 +46,7 @@ int setup_server_socket(uint16_t port) {
         return -1;
     }
 
-    if (listen(server_fd, 10) == -1) {
+    if (listen(server_fd, CONNECTION_BACKLOG) == -1) {
         perror("listen()");
         close(server_fd);
         return -1;

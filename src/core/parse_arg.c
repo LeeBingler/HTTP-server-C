@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 
+#include "../../include/config.h"
 #include "../../include/core/parse_arg.h"
 #include "../../include/utils/utils.h"
 
@@ -81,8 +83,8 @@ parse *parse_arg(int argc, char **argv) {
     }
 
     // Set defaults if not specified
-    if (!parse_s->port) parse_s->port = char_to_port("8080");
-    if (!parse_s->root) parse_s->root = "./";
+    if (!parse_s->port) parse_s->port = htons(DEFAULT_PORT);
+    if (!parse_s->root) parse_s->root = DEFAULT_ROOT;
 
 
     return parse_s;

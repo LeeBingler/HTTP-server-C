@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "../../include/config.h"
 #include "../../include/http/http-headers.h"
 #include "../../include/http/parse_request.h"
 #include "../../include/http/status_log.h"
@@ -37,19 +38,19 @@ int normalize_request_path(request_t *request, char *path_root) {
 }
 
 int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root) {
-    char buff[BUFF_SIZE];
+    char buff[CHUNK_SIZE];
     int status_code = 200;
     int keep_alive;
 
-    struct timeval timeout = { .tv_sec = 5, .tv_usec = 0 };
+    struct timeval timeout = { .tv_sec = CLIENT_TIMEOUT_SEC, .tv_usec = 0 };
     if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
         close(client_fd);
         return -1;
     }
 
     while (1) {
-        memset(buff, 0, BUFF_SIZE);
-        int byte_recv = recv(client_fd, buff, BUFF_SIZE, 0);
+        memset(buff, 0, CHUNK_SIZE);
+        int byte_recv = recv(client_fd, buff, CHUNK_SIZE, 0);
 
         if (byte_recv < 0 ) {
             if (errno == EINTR) continue; // signal interrupt
