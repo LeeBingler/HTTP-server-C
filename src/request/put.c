@@ -1,34 +1,39 @@
-#include <stdio.h>
-#include <errno.h>
+#include <string.h>
 #include <netinet/in.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdio.h>
 
-#include "../../include/http/http-headers.h"
 #include "../../include/http/parse_request.h"
-#include "../../include/http/send_file.h"
+#include "../../include/http/http-headers.h"
 
-int head(request_t *request, int client_fd) {
-    FILE *file = fopen(request->path, "rb");
+int put(request_t *request, int client_fd) {
+    if (!request->datas || strlen(request->datas) < 1) {
+        send(client_fd, "HTTP/1.1 400 Bad Request\r\n", 28, 0);
+        return 400;
+    }
+
+    FILE *file = fopen(request->path, "w");
 
     if (!file) {
-        if (errno == ENOENT || errno == ENOTDIR) {
-            send(client_fd, "HTTP/1.1 404 Not Found\r\n", 25, 0);
-            return 404;
-        } else if (errno == EACCES) {
+        if (errno == EACCES) {
             send(client_fd, "HTTP/1.1 403 Forbidden\r\n", 25, 0);
             return 403;
         }
 
         send(client_fd, "HTTP/1.1 500 Internal Server Error\r\n", 36, 0);
-        perror("fopen get");
+        perror("fopen put");
         return 500;
     }
 
-    // Send response
+    fputs(request->datas, file);
+
     send(client_fd, "HTTP/1.1 200 OK\r\n", 17, 0);
     send_date(client_fd);
     send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
     send_connection(client_fd, request->keep_alive);
+    send_contentlocation(client_fd, strchr(request->path, '/'));
     send(client_fd, "\r\n", 2, 0);  // end of headers
 
     fclose(file);

@@ -83,3 +83,24 @@ int send_connection(int client_fd, int keep_alive) {
     send(client_fd, message, strlen(message), 0);
     return 0;
 }
+
+int send_contentlocation(int client_fd, char *filename) {
+    const char *prefix = "Content-Location: ";
+    const char *suffix = "\r\n";
+
+    size_t total_len = strlen(prefix) + strlen(filename) + strlen(suffix);
+
+    char *message = malloc(total_len + 1);
+    if (!message) {
+        perror("malloc");
+        return -1;
+    }
+
+    strcpy(message, prefix);
+    strcat(message, filename);
+    strcat(message, suffix);
+
+    send(client_fd, message, total_len, 0);
+    free(message);
+    return 0;
+}

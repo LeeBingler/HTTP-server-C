@@ -16,6 +16,7 @@ SRC		:=	src/core/server.c	\
 			src/http/send_file.c	\
 			src/http/mime_types.c	\
 			src/request/get.c	\
+			src/request/put.c	\
 			src/request/post.c	\
 			src/request/head.c	\
 			src/utils/utils.c	\

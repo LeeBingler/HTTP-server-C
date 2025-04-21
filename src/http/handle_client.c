@@ -12,31 +12,15 @@
 #include "../../include/request/get.h"
 #include "../../include/request/head.h"
 #include "../../include/request/post.h"
+#include "../../include/request/put.h"
 
 int normalize_request_path(request_t *request, char *path_root) {
     if (strstr(request->path, "..")) {
         return 403; // Prevent directory traversal
     }
 
-    size_t len_path = strlen(request->path);
-
-    // make index.html default if the path end by "/" ==> move it before get_request call
-    if (request->path[len_path - 1] == '/') {
-        const char *index = "index.html";
-        size_t new_len = len_path + strlen(index) + 1;
-
-        char *new_path = calloc(new_len, sizeof(char));
-        if (!new_path) return -1;
-
-        strncpy(new_path, request->path, len_path);
-        strcat(new_path, index);
-
-        free(request->path);
-        request->path = new_path;
-    }
-
     // add path_root to path
-    len_path = strlen(request->path);
+    size_t len_path = strlen(request->path);
     size_t len_root = strlen(path_root);
     char *full_path = calloc(len_path + len_root + 1, sizeof(char));
     if (!full_path) return -1;
@@ -113,6 +97,9 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
 
         } else if (strcmp(request->method, "HEAD") == 0) {
             status_code = head(request, client_fd);
+
+        } else if (strcmp(request->method, "PUT") == 0) {
+            status_code = put(request, client_fd);
 
         } else {
             const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET POST HEAD\r\n";
