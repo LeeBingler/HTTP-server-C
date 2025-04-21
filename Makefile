@@ -41,4 +41,7 @@ fclean: clean
 
 re:	fclean all
 
+test:
+	./tests/run_tests.sh
+
 .PHONY: all clean fclean re

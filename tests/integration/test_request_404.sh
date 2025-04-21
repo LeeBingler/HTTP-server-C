@@ -6,7 +6,7 @@ echo "[TEST] 404 Not Found"
 SERVER_PID=$!
 sleep 1
 
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/notfound.html)
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/notfound.html -H "Connection: close")
 
 kill $SERVER_PID
 wait $SERVER_PID 2>/dev/null

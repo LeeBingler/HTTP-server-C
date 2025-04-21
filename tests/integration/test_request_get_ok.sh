@@ -7,7 +7,7 @@ SERVER_PID=$!
 
 sleep 1
 
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/index.html | grep -q 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/index.html -H "Connection: close" | grep -q 200
 RESULT=$?
 
 kill $SERVER_PID

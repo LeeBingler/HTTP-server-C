@@ -8,7 +8,7 @@ SERVER_PID=$!
 sleep 1  # Laisse le serveur démarrer
 
 # Effectue une requête POST
-RESPONSE=$(curl -s -X POST -d "hello=world&test=123" http://localhost:8080/)
+RESPONSE=$(curl -s -X POST -d "hello=world&test=123" http://localhost:8080/ -H "Connection: close")
 
 # Arrête le serveur
 kill $SERVER_PID
