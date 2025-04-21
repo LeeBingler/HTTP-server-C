@@ -1,6 +1,3 @@
-#ifndef MIME_TYPES_H
-#define MIME_TYPES_H
-
 const char* get_mime_type(const char *ext) {
     if (!ext) return "application/octet-stream";
 
@@ -35,5 +32,3 @@ const char* get_mime_type(const char *ext) {
 
     return "application/octet-stream"; // default
 }
-
-#endif // MIME_TYPES_H

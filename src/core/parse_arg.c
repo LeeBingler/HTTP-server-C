@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/parse_arg.h"
-#include "../include/utils.h"
+#include "../../include/core/parse_arg.h"
+#include "../../include/utils/utils.h"
 
 static void print_helper() {
     printf(

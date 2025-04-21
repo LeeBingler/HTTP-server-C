@@ -5,66 +5,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "../include/http-headers.h"
-#include "../include/parse_request.h"
-#include "../include/status_log.h"
-
-
-#define BUFF_SIZE 1024
-
-int send_file(int client_fd, FILE *file) {
-    size_t bytes_read = 0;
-    char response[BUFF_SIZE] = { 0 };
-
-    while ((bytes_read = fread(response, sizeof(char), BUFF_SIZE, file)) > 0) {
-        size_t total_sent = 0;
-
-        while (total_sent < bytes_read) {
-            ssize_t sent = send(client_fd, response + total_sent, bytes_read - total_sent, 0);
-
-            if (sent < 0) {
-                if (errno == EINTR) continue;
-                return -1;
-            }
-
-            total_sent += sent;
-        }
-    }
-
-
-    return 0;
-}
-
-int get_request(request_t *request, int client_fd) {
-    FILE *file = fopen(request->path, "rb");
-
-    if (!file) {
-        if (errno == ENOENT || errno == ENOTDIR) {
-            send(client_fd, "HTTP/1.1 404 Not Found\r\n", 25, 0);
-            return 404;
-        } else if (errno == EACCES) {
-            send(client_fd, "HTTP/1.1 403 Forbidden\r\n", 25, 0);
-            return 403;
-        }
-
-        perror("fopen get_request");
-        return errno;
-    }
-
-    // Send response
-    send(client_fd, "HTTP/1.1 200 OK\r\n", 17, 0);
-    send_date(client_fd);
-    send_contentlength(client_fd, file);
-    send_contenttype(client_fd, request->path);
-    send_connection(client_fd, request->keep_alive);
-    send(client_fd, "\r\n", 2, 0);  // end of headers
-
-    send_file(client_fd, file);
-    fclose(file);
-
-
-    return 200;
-}
+#include "../../include/http/http-headers.h"
+#include "../../include/http/parse_request.h"
+#include "../../include/http/status_log.h"
+#include "../../include/http/handle_client.h"
+#include "../../include/request/get.h"
+#include "../../include/request/post.h"
 
 int normalize_request_path(request_t *request, char *path_root) {
     if (strstr(request->path, "..")) {
@@ -159,7 +105,11 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
 
 
         if (strcmp(request->method, "GET") == 0) {
-            status_code = get_request(request, client_fd);
+            status_code = get(request, client_fd);
+
+        } else if (strcmp(request->method, "POST") == 0) {
+            status_code = post(request, client_fd);
+
         } else {
             const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
             send(client_fd, mess_header, strlen(mess_header), 0);

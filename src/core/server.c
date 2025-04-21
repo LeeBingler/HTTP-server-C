@@ -8,8 +8,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "../include/handle_client.h"
-#include "../include/parse_arg.h"
+#include "../../include/http/handle_client.h"
+#include "../../include/core/parse_arg.h"
 
 static volatile sig_atomic_t running = 1;
 

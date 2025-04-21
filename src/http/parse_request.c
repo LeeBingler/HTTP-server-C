@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../include/parse_request.h"
+#include "../../include/http/parse_request.h"
 
 #define ERR_EXIT(msg) (perror(msg), errno)
 

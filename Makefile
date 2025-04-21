@@ -7,13 +7,17 @@ CFLAGS	:=	-g3 -Wall -Wextra
 NAME	:=	http-server-c
 
 
-SRC		:=	src/server.c	\
-			src/handle_client.c	\
-			src/parse_request.c	\
-			src/parse_arg.c	\
-			src/http_headers.c	\
-			src/status_log.c	\
-			src/utils.c	\
+SRC		:=	src/core/server.c	\
+			src/core/parse_arg.c	\
+			src/http/handle_client.c	\
+			src/http/http_headers.c	\
+			src/http/parse_request.c	\
+			src/http/status_log.c	\
+			src/http/send_file.c	\
+			src/http/mime_types.c	\
+			src/request/get.c	\
+			src/request/post.c	\
+			src/utils/utils.c	\
 
 OBJ		:=	$(SRC:.c=.o)
 
