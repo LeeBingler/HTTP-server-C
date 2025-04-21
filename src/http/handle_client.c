@@ -106,7 +106,7 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
             status_code = delete(request, client_fd);
 
         } else {
-            const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET POST HEAD\r\n";
+            const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET POST HEAD PUT DELETE\r\n";
             send(client_fd, mess_header, strlen(mess_header), 0);
             status_code = 501;
         }
