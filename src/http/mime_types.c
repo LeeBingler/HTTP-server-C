@@ -1,3 +1,5 @@
+#include <strings.h>
+
 const char* get_mime_type(const char *ext) {
     if (!ext) return "application/octet-stream";
 
