@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "../../include/http/parse_request.h"
 #include "../../include/http/http-headers.h"
@@ -12,6 +13,20 @@ int put(request_t *request, int client_fd) {
         send(client_fd, "HTTP/1.1 400 Bad Request\r\n", 28, 0);
         return 400;
     }
+
+    // prevent rewrite on dir
+    struct stat st;
+    if (stat(request->path, &st) == 0 && S_ISDIR(st.st_mode)) {
+        send(client_fd, "HTTP/1.1 400 Bad Request\r\n\r\n", 30, 0);
+        return 400;
+    }
+
+    // prevent erase existing file
+    if (access(request->path, F_OK) == 0) {
+        send(client_fd, "HTTP/1.1 409 Conflict\r\n", 25, 0);
+        return 409;
+    }
+
 
     FILE *file = fopen(request->path, "w");
 
@@ -28,9 +43,8 @@ int put(request_t *request, int client_fd) {
 
     fputs(request->datas, file);
 
-    send(client_fd, "HTTP/1.1 200 OK\r\n", 17, 0);
+    send(client_fd, "HTTP/1.1 201 Created\r\n", 23, 0);
     send_date(client_fd);
-    send_contentlength(client_fd, file);
     send_contenttype(client_fd, request->path);
     send_connection(client_fd, request->keep_alive);
     send_contentlocation(client_fd, strchr(request->path, '/'));
