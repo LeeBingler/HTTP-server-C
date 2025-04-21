@@ -44,7 +44,7 @@ A lightweight HTTP server built from scratch in C, designed for educational purp
     Open a web server on PORT with ROOT_DIR as root.
     Options:\n"
         -p, --port [PORT]       Specify the port number (default: 8080)
-        -r, --root [ROOT_DIR]   Set the root directory (default: ./)
+        -r, --root [ROOT_DIR]   Set the root directory (default: ./www)
         --help                  Show this help message
     Examples:
         ./my-server -p 8080 -r ./www/
@@ -67,9 +67,10 @@ A lightweight HTTP server built from scratch in C, designed for educational purp
     │   ├── http
     │   ├── request
     │   └── utils
-    └── tests
-        ├── integration
-        └── run_tests.sh
+    ├── tests
+    │   ├── integration
+    │   └── run_tests.sh
+    └── www
 ```
 
 ## License
