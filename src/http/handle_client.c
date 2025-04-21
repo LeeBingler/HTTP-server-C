@@ -10,6 +10,7 @@
 #include "../../include/http/status_log.h"
 #include "../../include/http/handle_client.h"
 #include "../../include/request/get.h"
+#include "../../include/request/head.h"
 #include "../../include/request/post.h"
 
 int normalize_request_path(request_t *request, char *path_root) {
@@ -110,8 +111,11 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
         } else if (strcmp(request->method, "POST") == 0) {
             status_code = post(request, client_fd);
 
+        } else if (strcmp(request->method, "HEAD") == 0) {
+            status_code = head(request, client_fd);
+
         } else {
-            const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET\r\n";
+            const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET POST HEAD\r\n";
             send(client_fd, mess_header, strlen(mess_header), 0);
             status_code = 501;
         }

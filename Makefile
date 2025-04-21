@@ -17,6 +17,7 @@ SRC		:=	src/core/server.c	\
 			src/http/mime_types.c	\
 			src/request/get.c	\
 			src/request/post.c	\
+			src/request/head.c	\
 			src/utils/utils.c	\
 
 OBJ		:=	$(SRC:.c=.o)
