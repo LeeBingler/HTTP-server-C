@@ -4,7 +4,7 @@ A lightweight HTTP server built from scratch in C, designed for educational purp
 
 ## Features
 
-- Handles basic HTTP GET requests
+- Handles basic HTTP GET, POST, PUT, DELETE, HEAD requests
 - Serves static files from a specified directory
 - Implements minimal HTTP request parsing
 - Provides appropriate HTTP response headers
@@ -32,7 +32,11 @@ A lightweight HTTP server built from scratch in C, designed for educational purp
     make
     ```
 
-This will compile the source files and generate the executable.
+3. Run test
+
+   ```bash
+   make test
+   ```
 
 ### Usage
 
@@ -45,17 +49,28 @@ This will compile the source files and generate the executable.
     Examples:
         ./my-server -p 8080 -r ./www/
 
-## Project Structure
+##  Project Structure
 
-- src/: Contains the source code files.
-
-- include/: Contains header files.
-
-- tests/: Contains tests files.
-
-- Makefile: Build configuration.
-
-- README.md: Project documentation.​
+```sh
+└── HTTP-server-C/
+    ├── LICENSE
+    ├── Makefile
+    ├── README.md
+    ├── include
+    │   ├── config.h
+    │   ├── core
+    │   ├── http
+    │   ├── request
+    │   └── utils
+    ├── src
+    │   ├── core
+    │   ├── http
+    │   ├── request
+    │   └── utils
+    └── tests
+        ├── integration
+        └── run_tests.sh
+```
 
 ## License
 
