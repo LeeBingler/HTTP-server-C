@@ -38,6 +38,7 @@ int send_date(int client_fd) {
 }
 
 int send_contentlength(int client_fd, FILE *file) {
+    if (!file) return -1;
     long file_size;
     char message[64] = { 0 };
     int len_message = 0;
