@@ -3,9 +3,9 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-const char* get_file_extension(char *filename) {
-    const char *dot = strrchr(filename, '.');
-    if (!dot || dot == filename) return "";
+char* get_file_extension(char *filename) {
+    char *dot = strrchr(filename, '.');
+    if (!dot || dot == filename) return NULL;
     return dot + 1;
 }
 

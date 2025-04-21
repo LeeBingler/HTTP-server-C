@@ -54,7 +54,9 @@ int send_contentlength(int client_fd, FILE *file) {
 }
 
 int send_contenttype(int client_fd, char *filename) {
-    const char *ext = get_file_extension(filename);
+    char *ext = get_file_extension(filename);
+    if (!ext) ext = filename;
+
     const char *mime_type = get_mime_type(ext);
     const char *prefix = "Content-Type: ";
     const char *suffix = "\r\n";

@@ -10,10 +10,10 @@
 void free_request(request_t *request) {
     if (!request) return;
 
-    if (request->method != NULL) free(request->method);
-    if (request->path != NULL) free(request->path);
-    if (request->protocol != NULL) free(request->protocol);
-    if (request->datas != NULL) free(request->datas);
+    free(request->method);
+    free(request->path);
+    free(request->protocol);
+    free(request->datas);
 
     if (request->headers != NULL) {
         HttpHeader_t *ptr = request->headers;
