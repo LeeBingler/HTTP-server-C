@@ -40,7 +40,7 @@ A lightweight HTTP server built from scratch in C, designed for educational purp
 
 ### Usage
 
-    Usage: my-server [OPTIONS]
+    Usage: http-server-c [OPTIONS]
     Open a web server on PORT with ROOT_DIR as root.
     Options:\n"
         -p, --port [PORT]       Specify the port number (default: 8080)
