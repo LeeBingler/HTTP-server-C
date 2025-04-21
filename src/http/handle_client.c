@@ -13,6 +13,7 @@
 #include "../../include/request/head.h"
 #include "../../include/request/post.h"
 #include "../../include/request/put.h"
+#include "../../include/request/delete.h"
 
 int normalize_request_path(request_t *request, char *path_root) {
     if (strstr(request->path, "..")) {
@@ -100,6 +101,9 @@ int handle_client(int client_fd, struct sockaddr_in client_addr, char *path_root
 
         } else if (strcmp(request->method, "PUT") == 0) {
             status_code = put(request, client_fd);
+
+        } else if (strcmp(request->method, "DELETE") == 0) {
+            status_code = delete(request, client_fd);
 
         } else {
             const char *mess_header = "HTTP/1.1 501 Not Implemented\r\nAllow: GET POST HEAD\r\n";

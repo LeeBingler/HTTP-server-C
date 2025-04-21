@@ -19,6 +19,7 @@ SRC		:=	src/core/server.c	\
 			src/request/put.c	\
 			src/request/post.c	\
 			src/request/head.c	\
+			src/request/delete.c	\
 			src/utils/utils.c	\
 
 OBJ		:=	$(SRC:.c=.o)
