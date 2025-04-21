@@ -6,6 +6,8 @@ echo ""
 
 FAILED=0
 
+make re
+
 for test_script in tests/test_*.sh; do
     if [ -x "$test_script" ]; then
         $test_script
